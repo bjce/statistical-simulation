@@ -1,0 +1,47 @@
+library(lme4)
+library(nlme)
+library(lubridate)
+library(dplyr)
+library(broom)
+
+# 3 different populations
+pop = c(rep("p1", 10), rep("p2", 6), rep("p3", 4))
+
+# value at time of first intervention
+date_t1 = as.Date(as.Date(rep("2012-01-30",10)) -replicate(20, 40*rnorm(1)) %>% round())
+
+
+y1 = c(10-(replicate(20, 20+(3*rnorm(1))) %>% round(digit = 1))) %>% abs()
+y1[c(2,4, 9, 12, 15, 19)] = NA
+y2 = rbinom(20,1,0.4)
+y2[c(1,2, 4,5,6, 9, 14, 18, 19)] = NA
+
+# value at time of second intervention
+date_t2 = as.Date(as.Date(rep("2013-04-03",10)) -replicate(20, 40*rnorm(1)) %>% round())
+date_t2[1:10] = NA
+
+y1_t2 = c(10-(replicate(20, 25+(3*rnorm(1))) %>% round(digit = 1))) %>% abs()
+y1_t2[c(1:10, 12, 15, 19)] = NA
+
+y2_t2 = rbinom(20,1,0.4)
+y2_t2[c(1:10, 11, 13, 14, 19)] = NA
+
+# value at time of third intervention
+date_t3 = as.Date(as.Date(rep("2013-04-03",10)) -replicate(20, 40*rnorm(1)) %>% round())
+date_t3[1:16] = NA
+
+y1_t3 = c(10-(replicate(20, 26+(3*rnorm(1))) %>% round(digit = 1))) %>% abs()
+y1_t3[c(1:16, 20)] = NA
+
+y2_t3 = rbinom(20,1,0.4)
+y2_t3[c(1:16, 19)] = NA
+
+data = data.frame(pop, date_t1, y1, y2, date_t2, y1_t2, y2_t2, date_t3, 
+y1_t3, y2_t3, check.names = F)
+data
+
+mod_1 = lmer(y1 ~ 1 + (1|pop), data = data)
+summ_mod_1 = summary(mod_1)
+summ_mod_1
+
+mod_1_tidy = tidy(summ_mod_1)
